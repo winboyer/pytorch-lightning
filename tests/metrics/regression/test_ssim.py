@@ -7,6 +7,7 @@ from skimage.metrics import structural_similarity
 
 from pytorch_lightning.metrics.functional import ssim
 from pytorch_lightning.metrics.regression import SSIM
+from pytorch_lightning.utilities import _TPU_AVAILABLE
 from tests.metrics.utils import BATCH_SIZE, MetricTester, NUM_BATCHES
 
 torch.manual_seed(42)
@@ -48,10 +49,10 @@ def _sk_metric(preds, target, data_range, multichannel):
     )
 
 
-@pytest.mark.parametrize(
-    "preds, target, multichannel",
+@pytest.mark.parametrize("preds, target, multichannel",
     [(i.preds, i.target, i.multichannel) for i in _inputs],
 )
+@pytest.mark.skipif(_TPU_AVAILABLE, reason='Seems to be hanging on TPU, need to be fixed!')  # todo
 class TestSSIM(MetricTester):
     atol = 6e-5
 
