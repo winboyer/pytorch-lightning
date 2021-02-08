@@ -49,7 +49,8 @@ def _sk_metric(preds, target, data_range, multichannel):
     )
 
 
-@pytest.mark.parametrize("preds, target, multichannel",
+@pytest.mark.parametrize(
+    "preds, target, multichannel",
     [(i.preds, i.target, i.multichannel) for i in _inputs],
 )
 @pytest.mark.skipif(_TPU_AVAILABLE, reason='Seems to be hanging on TPU, need to be fixed!')  # todo
