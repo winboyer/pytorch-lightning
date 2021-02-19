@@ -21,8 +21,7 @@ Manual optimization
 For advanced research topics like reinforcement learning, sparse coding, or GAN research, it may be desirable
 to manually manage the optimization process. To do so, do the following:
 
-* Override your LightningModule ``automatic_optimization`` property to return ``False``
-* Drop or ignore the optimizer_idx argument
+* Set ``automatic_optimization`` in your LightningModule to ``False``.
 * Use `self.manual_backward(loss)` instead of `loss.backward()`.
 
 .. note:: This is only recommended for experts who need ultimate flexibility. Lightning will handle only precision and accelerators logic. The users are left with zero_grad, accumulated_grad_batches, model toggling, etc..
@@ -36,7 +35,10 @@ to manually manage the optimization process. To do so, do the following:
 
 .. code-block:: python
 
-    def training_step(batch, batch_idx, optimizer_idx):
+    def __init__(self):
+        self.automatic_optimization = False
+
+    def training_step(self, batch, batch_idx):
         opt = self.optimizers()
 
         loss = self.compute_loss(batch)
@@ -54,7 +56,10 @@ Here is the same example as above using a ``closure``.
 
 .. code-block:: python
 
-    def training_step(batch, batch_idx, optimizer_idx):
+    def __init__(self):
+        self.automatic_optimization = False
+
+    def training_step(self, batch, batch_idx):
         opt = self.optimizers()
 
         def forward_and_backward():
@@ -72,7 +77,10 @@ Here is the same example as above using a ``closure``.
 
     # Scenario for a GAN.
 
-    def training_step(...):
+    def __init__(self):
+        self.automatic_optimization = False
+
+    def training_step(self, batch, batch_idx):
         opt_gen, opt_dis = self.optimizers()
 
         # compute generator loss
@@ -108,6 +116,9 @@ Here is an example on how to use it:
 
 
     # Scenario for a GAN with gradient accumulation every 2 batches and optimized for multiple gpus.
+
+    def __init__(self):
+        self.automatic_optimization = False
 
     def training_step(self, batch, batch_idx, ...):
         opt_gen, opt_dis = self.optimizers()

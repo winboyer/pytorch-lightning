@@ -265,8 +265,7 @@ Turn off automatic optimization and you control the train loop!
     def __init__(self):
         self.automatic_optimization = False
 
-    def training_step(self, batch, batch_idx, optimizer_idx):
-        # access your optimizers with use_pl_optimizer=False. Default is True
+    def training_step(self, batch, batch_idx):
         (opt_a, opt_b, opt_c) = self.optimizers(use_pl_optimizer=True)
 
         loss_a = self.generator(batch[0])
