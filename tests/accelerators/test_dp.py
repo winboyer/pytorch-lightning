@@ -108,11 +108,11 @@ def test_dp_raise_exception_with_batch_transfer_hooks(tmpdir):
 
     class CustomModel(BoringModel):
 
-        def transfer_batch_to_device(batch, device):
+        def transfer_batch_to_device(self, batch, device):
             batch = batch.cuda()
             return batch
 
-        def transform_hook(batch, dataloader_idx):
+        def transform_hook(self, batch, dataloader_idx):
             batch += 1
             return batch
 
