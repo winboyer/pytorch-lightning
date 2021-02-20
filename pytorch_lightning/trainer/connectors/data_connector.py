@@ -81,7 +81,7 @@ class DataConnector(object):
 
         # set up the passed in dataloaders (if needed)
         self.attach_dataloaders(model, train_dataloader, val_dataloaders)
-        self.attach_datamodule(model, datamodule)
+        self.attach_datamodule(model, datamodule, 'fit')
         self._validate_data_hooks(model)
 
     def __enforce_datamodule_dataloader_override(self, train_dataloader, val_dataloaders, datamodule):
@@ -120,7 +120,9 @@ class DataConnector(object):
         if predict_dataloaders is not None:
             model.predict_dataloader = _PatchDataLoader(predict_dataloaders)
 
-    def attach_datamodule(self, model, datamodule: Optional[LightningDataModule]) -> None:
+    def attach_datamodule(self, model, datamodule: Optional[LightningDataModule], stage: str) -> None:
+        # Todo: required argument `stage` is not used
+
         # We use datamodule if it's been provided in .fit, .test or .predict, otherwise we check model for it
         datamodule = datamodule or getattr(model, 'datamodule', None)
 
