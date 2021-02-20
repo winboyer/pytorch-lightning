@@ -81,7 +81,8 @@ class DataConnector(object):
 
         # set up the passed in dataloaders (if needed)
         self.attach_dataloaders(model, train_dataloader, val_dataloaders)
-        self.attach_datamodule(model, datamodule, 'fit')
+        self.attach_datamodule(model, datamodule)
+        self._validate_data_hooks(model)
 
     def __enforce_datamodule_dataloader_override(self, train_dataloader, val_dataloaders, datamodule):
         # If you supply a datamodule you can't supply train_dataloader or val_dataloaders
@@ -89,6 +90,13 @@ class DataConnector(object):
             raise MisconfigurationException(
                 'You cannot pass train_dataloader or val_dataloaders to trainer.fit if you supply a datamodule'
             )
+
+    def _validate_data_hooks(self, model):
+        # Raise Misconfiguration exception since these hooks are not supported in DP mode
+        batch_transfer_hooks = ['on_before_batch_transfer', 'transfer_batch_to_device', 'on_after_batch_transfer']
+        for hook in batch_transfer_hooks:
+            if self.trainer.accelerator_connector.use_dp and is_overridden(hook, model):
+                raise MisconfigurationException(f'Overriding `{hook}` is not supported in DP mode.')
 
     def attach_dataloaders(
         self,
@@ -112,10 +120,8 @@ class DataConnector(object):
         if predict_dataloaders is not None:
             model.predict_dataloader = _PatchDataLoader(predict_dataloaders)
 
-    def attach_datamodule(self, model, datamodule: Optional[LightningDataModule], stage: str) -> None:
-        # Todo: required argument `stage` is not used
-
-        # We use datamodule if it's been provided on .fit or .test, otherwise we check model for it
+    def attach_datamodule(self, model, datamodule: Optional[LightningDataModule]) -> None:
+        # We use datamodule if it's been provided in .fit, .test or .predict, otherwise we check model for it
         datamodule = datamodule or getattr(model, 'datamodule', None)
 
         # If we have a datamodule, attach necessary hooks + dataloaders
@@ -132,10 +138,6 @@ class DataConnector(object):
             for hook in batch_transfer_hooks:
                 if is_overridden(hook, datamodule):
                     setattr(model, hook, getattr(datamodule, hook))
-
-                # Raise Misconfiguration exception since these hooks are not supported in DP mode
-                if self.trainer.accelerator_connector.use_dp and is_overridden(hook, model):
-                    raise MisconfigurationException(f'Overriding `{hook}` is not supported in DP mode.')
 
             self.trainer.datamodule = datamodule
             datamodule.trainer = self.trainer
