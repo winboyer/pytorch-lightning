@@ -100,11 +100,11 @@ def test_dp_test(tmpdir):
     assert torch.all(torch.eq(old_weights, new_weights))
 
 
-@pytest.mark.skipif(torch.cuda.device_count() < 2, reason="test requires multi-GPU machine")
-def test_dp_raise_exception_with_batch_transfer_hooks(tmpdir):
+def test_dp_raise_exception_with_batch_transfer_hooks(tmpdir, monkeypatch):
     """
     Test that an exception is raised when overriding batch_transfer_hooks in DP model.
     """
+    monkeypatch.setattr("torch.cuda.device_count", lambda: 2)
 
     class CustomModel(BoringModel):
 
@@ -112,7 +112,6 @@ def test_dp_raise_exception_with_batch_transfer_hooks(tmpdir):
             batch = batch.to(device)
             return batch
 
-    tutils.set_random_master_port()
     trainer_options = dict(
         default_root_dir=tmpdir,
         max_steps=7,
