@@ -90,7 +90,7 @@ def test_lightning_optimizer_manual_optimization(mock_sgd_step, mock_adam_step, 
             self.automatic_optimization = False
 
         def training_step(self, batch, batch_idx):
-            (opt_1, opt_2) = self.optimizers()
+            opt_1, opt_2 = self.optimizers()
             assert isinstance(opt_1, LightningOptimizer)
             assert isinstance(opt_2, LightningOptimizer)
 
@@ -146,7 +146,7 @@ def test_lightning_optimizer_manual_optimization_and_accumulated_gradients(mock_
             self.automatic_optimization = False
 
         def training_step(self, batch, batch_idx):
-            (opt_1, opt_2) = self.optimizers()
+            opt_1, opt_2 = self.optimizers()
             assert isinstance(opt_1, LightningOptimizer)
             assert isinstance(opt_2, LightningOptimizer)
 

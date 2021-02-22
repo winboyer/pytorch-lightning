@@ -120,7 +120,7 @@ Here is an example on how to use it:
     def __init__(self):
         self.automatic_optimization = False
 
-    def training_step(self, batch, batch_idx, ...):
+    def training_step(self, batch, batch_idx):
         opt_gen, opt_dis = self.optimizers()
 
         accumulated_grad_batches = batch_idx % 2 == 0

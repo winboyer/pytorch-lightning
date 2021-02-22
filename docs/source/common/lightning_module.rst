@@ -958,7 +958,7 @@ This is recommended only if using 2+ optimizers AND if you know how to perform t
         self.automatic_optimization = False
 
     def training_step(self, batch, batch_idx):
-        (opt_a, opt_b) = self.optimizers(use_pl_optimizer=True)
+        opt_a, opt_b = self.optimizers(use_pl_optimizer=True)
 
         gen_loss = ...
         opt_a.zero_grad()
