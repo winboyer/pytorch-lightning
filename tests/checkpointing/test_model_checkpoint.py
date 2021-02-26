@@ -346,9 +346,9 @@ class ModelCheckpointTestInvocations(ModelCheckpoint):
     def on_train_start(self, trainer, pl_module):
         torch.save = Mock(wraps=torch.save)
 
-    def on_save_checkpoint(self, trainer, pl_module):
+    def on_save_checkpoint(self, trainer, pl_module, checkpoint):
         # expect all ranks to run but only rank 0 will actually write the checkpoint file
-        super().on_save_checkpoint(trainer, pl_module)
+        super().on_save_checkpoint(trainer, pl_module, checkpoint)
         self.on_save_checkpoint_count += 1
 
     def on_train_end(self, trainer, pl_module):
@@ -417,9 +417,9 @@ def test_model_checkpoint_format_checkpoint_name(tmpdir):
     assert ckpt_name == str(Path('.').resolve() / 'epoch=3-step=4.ckpt')
 
     # with version
-    ckpt = ModelCheckpoint(monitor='early_stop_on', dirpath=tmpdir, filename='name', prefix='test')
+    ckpt = ModelCheckpoint(monitor='early_stop_on', dirpath=tmpdir, filename='name')
     ckpt_name = ckpt.format_checkpoint_name(3, 2, {}, ver=3)
-    assert ckpt_name == tmpdir / 'test-name-v3.ckpt'
+    assert ckpt_name == tmpdir / 'name-v3.ckpt'
 
     # using slashes
     ckpt = ModelCheckpoint(monitor='early_stop_on', dirpath=None, filename='{epoch}_{val/loss:.5f}')
@@ -899,16 +899,6 @@ def test_configure_model_checkpoint(tmpdir):
     assert trainer.checkpoint_callback == callback1
     assert trainer.checkpoint_callbacks == [callback1, callback2]
 
-    with pytest.warns(DeprecationWarning, match='will no longer be supported in v1.3'):
-        trainer = Trainer(checkpoint_callback=callback1, **kwargs)
-        assert [c for c in trainer.callbacks if isinstance(c, ModelCheckpoint)] == [callback1]
-        assert trainer.checkpoint_callback == callback1
-
-    with pytest.warns(DeprecationWarning, match="will no longer be supported in v1.3"):
-        trainer = Trainer(checkpoint_callback=callback1, callbacks=[callback2], **kwargs)
-        assert trainer.checkpoint_callback == callback2
-        assert trainer.checkpoint_callbacks == [callback2, callback1]
-
     with pytest.raises(MisconfigurationException, match="checkpoint_callback=False but found ModelCheckpoint"):
         Trainer(checkpoint_callback=False, callbacks=[callback1], **kwargs)
 
@@ -1098,5 +1088,5 @@ def test_ckpt_version_after_rerun_same_trainer(tmpdir):
 
 
 def test_model_checkpoint_mode_options():
-    with pytest.raises(MisconfigurationException, match="`mode` can be auto, .* got unknown_option"):
+    with pytest.raises(MisconfigurationException, match="`mode` can be .* but got unknown_option"):
         ModelCheckpoint(mode="unknown_option")
