@@ -65,16 +65,21 @@ class PredictLoop(object):
             length = len(dataloaders[0])
         return length
 
-    def predict(self, batch, batch_idx, dataloader_idx):
-        # configure args
-        args = [batch, batch_idx]
+    def _build_kwargs(self, batch, batch_idx, dataloader_idx):
+        # configure kwargs
+        kwargs = {'batch': batch, 'batch_idx': batch_idx}
         if self.num_dataloaders:
-            args.append(dataloader_idx)
+            kwargs['dataloader_idx'] = dataloader_idx
 
+        return kwargs
+
+    def predict(self, batch, batch_idx, dataloader_idx):
+        # configure kwargs
+        kwargs = self._build_kwargs(batch, batch_idx, dataloader_idx)
         model_ref = self.trainer.lightning_module
 
         model_ref._current_fx_name = "predict"
-        predictions = self.trainer.accelerator.predict(args)
+        predictions = self.trainer.accelerator.predict(kwargs)
         self._predictions[dataloader_idx].append(predictions)
         self.trainer._progress_bar_callback.on_predict_batch_end(
             self.trainer, model_ref, predictions, batch, batch_idx, dataloader_idx
