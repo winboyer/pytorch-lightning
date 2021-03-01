@@ -27,7 +27,7 @@ from pytorch_lightning.plugins import DDPSpawnPlugin
 from pytorch_lightning.plugins.environments import TorchElasticEnvironment
 from tests.deprecated_api import _soft_unimport_module
 from tests.helpers import BoringModel
-from tests.helpers.skipif import SkipIf
+from tests.helpers.runif import RunIf
 
 
 def test_v1_4_0_deprecated_trainer_attributes():
@@ -178,7 +178,7 @@ class CustomDDPPlugin(DDPSpawnPlugin):
 
 
 @pytest.mark.skipif(torch.cuda.device_count() < 2, reason="test requires multi-GPU machine")
-@SkipIf(windows=True)
+@RunIf(not_windows=True)
 def test_v1_4_0_deprecated_lightning_distributed_data_parallel(tmpdir):
     model = BoringModel()
     trainer = Trainer(

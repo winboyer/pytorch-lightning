@@ -22,11 +22,11 @@ from pkg_resources import get_distribution
 from pytorch_lightning.utilities import _TORCH_QUANTIZE_AVAILABLE
 
 
-class SkipIf:
+class RunIf:
     """
-    SkipIf wrapper for simple marking specific cases, fully compatible with pytest.mark::
+    RunIf wrapper for simple marking specific cases, fully compatible with pytest.mark::
 
-        @SkipIf(min_torch="0.0")
+        @RunIf(min_torch="0.0")
         @pytest.mark.parametrize("arg1", [1, 2.0])
         def test_wrapper(arg1):
             assert arg1 > 0.0
@@ -38,7 +38,7 @@ class SkipIf:
         min_gpus: int = 0,
         min_torch: Optional[str] = None,
         quantization: bool = False,
-        windows: bool = False,
+        not_windows: bool = False,
         **kwargs
     ):
         """
@@ -66,7 +66,7 @@ class SkipIf:
             conditions.append(not _TORCH_QUANTIZE_AVAILABLE or _miss_default)
             reasons.append("missing PyTorch quantization")
 
-        if windows:
+        if not_windows:
             conditions.append(sys.platform == "win32")
             reasons.append("unimplemented on Windows")
 
@@ -79,12 +79,12 @@ class SkipIf:
         )
 
 
-@SkipIf(min_torch="99")
+@RunIf(min_torch="99")
 def test_always_skip():
     exit(1)
 
 
 @pytest.mark.parametrize("arg1", [0.5, 1.0, 2.0])
-@SkipIf(min_torch="0.0")
+@RunIf(min_torch="0.0")
 def test_wrapper(arg1):
     assert arg1 > 0.0
