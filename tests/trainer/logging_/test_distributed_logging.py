@@ -20,6 +20,7 @@ import torch
 
 from pytorch_lightning import Trainer
 from tests.helpers import BoringModel
+from tests.helpers.skipif import SkipIf
 
 
 class TestModel(BoringModel):
@@ -33,7 +34,7 @@ class TestModel(BoringModel):
             assert logged_times == expected, msg
 
 
-@pytest.mark.skipif(platform.system() == "Windows", reason="Distributed training is not supported on Windows")
+@SkipIf(windows=True)
 def test_global_zero_only_logging_ddp_cpu(tmpdir):
     """
     Makes sure logging only happens from root zero

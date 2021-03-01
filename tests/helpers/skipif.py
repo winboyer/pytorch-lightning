@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from distutils.version import LooseVersion
 from typing import Optional
 
@@ -37,6 +38,7 @@ class SkipIf:
         min_gpus: int = 0,
         min_torch: Optional[str] = None,
         quantization: bool = False,
+        windows: bool = False,
         **kwargs
     ):
         """
@@ -63,6 +65,10 @@ class SkipIf:
             _miss_default = 'fbgemm' not in torch.backends.quantized.supported_engines
             conditions.append(not _TORCH_QUANTIZE_AVAILABLE or _miss_default)
             reasons.append("missing PyTorch quantization")
+
+        if windows:
+            conditions.append(sys.platform == "win32")
+            reasons.append("unimplemented on Windows")
 
         reasons = [rs for cond, rs in zip(conditions, reasons) if cond]
         return pytest.mark.skipif(

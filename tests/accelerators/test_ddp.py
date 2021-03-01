@@ -21,6 +21,7 @@ import torch
 from pytorch_lightning import Trainer
 from tests.accelerators import ddp_model, DDPLauncher
 from tests.helpers.boring_model import BoringModel
+from tests.helpers.skipif import SkipIf
 from tests.utilities.distributed import call_training_script
 
 CLI_ARGS = '--max_epochs 1 --gpus 2 --accelerator ddp'
@@ -82,7 +83,7 @@ def test_cli_to_pass(tmpdir, args=None):
     return '1'
 
 
-@pytest.mark.skipif(platform.system() == "Windows", reason="Distributed training is not supported on Windows")
+@SkipIf(windows=True)
 @pytest.mark.skipif(torch.cuda.is_available(), reason="test doesn't requires GPU machine")
 def test_torch_distributed_backend_env_variables(tmpdir):
     """

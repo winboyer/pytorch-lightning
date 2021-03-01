@@ -8,6 +8,7 @@ import torch
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.utilities import AllGatherGrad
 from tests.helpers.boring_model import BoringModel
+from tests.helpers.skipif import SkipIf
 
 
 def setup_ddp(rank, world_size):
@@ -41,13 +42,13 @@ def _test_all_gather_ddp(rank, world_size):
     assert torch.allclose(grad2, tensor2.grad)
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@SkipIf(windows=True)
 def test_all_gather_ddp():
     world_size = 3
     torch.multiprocessing.spawn(_test_all_gather_ddp, args=(world_size, ), nprocs=world_size)
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@SkipIf(windows=True)
 @pytest.mark.skipif(torch.cuda.device_count() < 2, reason="test requires multi-GPU machine")
 @pytest.mark.skipif(
     not os.getenv("PL_RUNNING_SPECIAL_TESTS", '0') == '1', reason="test should be run outside of pytest"
